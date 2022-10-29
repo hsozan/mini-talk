@@ -21,7 +21,7 @@ int	ft_strlen_or_putnbr(int nbr, char *s)
 	i = 0;
 	if (nbr == -1)
 	{
-		while(str[i++])
+		while(s[i++])
 		return (i)
 	}
 	if (nbr >= 10)
