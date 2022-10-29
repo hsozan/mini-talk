@@ -13,14 +13,21 @@
 #include <signal.h>
 #include <unistd.h>
 
-void	ft_put_nbr(int nbr)
+int	ft_strlen_or_putnbr(int nbr, char *s)
 {
 	char	c;
+	int		i;
 
+	i = 0;
+	if (nbr == -1)
+	{
+		while(str[i++])
+		return (i)
+	}
 	if (nbr >= 10)
-		ft_put_nbr(nbr / 10);
+		ft_strlen_or_putnbr(nbr / 10);
 	c = (nbr % 10) + 48;
-	write(1, &c, 1);
+	return(write(1, &c, 1));
 }
 
 int	ft_atoi(char *s)
@@ -36,16 +43,6 @@ int	ft_atoi(char *s)
 		i++;
 	}
 	return (res);
-}
-
-int	ft_strlen(char *s)
-{
-	int	i;
-
-	i = 0;
-	while (s[i])
-		i++;
-	return (i);
 }
 
 void	send(int pid, char c)
@@ -67,7 +64,6 @@ void	send(int pid, char c)
 void	send_msg(int pid, char *s, int *g)
 {
 	int		i;
-	int		j;
 	char	c;
 
 	c = '\r';
@@ -75,16 +71,7 @@ void	send_msg(int pid, char *s, int *g)
 	send(pid, c);
 	while (s[i])
 	{
-		j = 128;
-		while (j > 0)
-		{
-			if (s[i] & j)
-				kill(pid, SIGUSR2);
-			else
-				kill(pid, SIGUSR1);
-			j /= 2;
-			usleep(100);
-		}
+        send(pid, s[i]);
 		i++;
 		(*g)++;
 	}
@@ -102,11 +89,11 @@ int	main(int ac, char **av)
 	if (ac != 3)
 		return (write(1, "Too many or too few arguments!\n", 32));
 	send_msg(ft_atoi(av[1]), av[2], &g);
-	if (g == ft_strlen(av[2]))
+	if (g == ft_strlen_or_putnbr(-1,av[2]))
 	{
-		ft_put_nbr(g);
+		ft_strlen_or_putnbr(g);
 		write(1, " characters send to pid number :", 32);
-		ft_put_nbr(ft_atoi(av[1]));
+		ft_strlen_or_putnbr(ft_atoi(av[1]));
 		write(1, "\n", 1);
 	}
 	return (0);
