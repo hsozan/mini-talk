@@ -13,40 +13,56 @@
 #include <signal.h>
 #include <unistd.h>
 
-int	g_i = 128;
-
-void	ft_put_nbr(int nbr)
+void	ft_putnbr(int nbr)
 {
 	char	c;
 
 	if (nbr >= 10)
-		ft_put_nbr(nbr / 10);
+		ft_putnbr(nbr / 10);
 	c = (nbr % 10) + 48;
 	write(1, &c, 1);
 }
 
-void	msg(int s)
+void	sig_handler(int sig, siginfo_t *siginfo, void *unused)
 {
-	unsigned static char	c;
+	static unsigned char	c = 0;
+	static int				cnt = 0;
+	static pid_t			client_pid = 0;
 
-	if (s == SIGUSR2)
-		c += g_i;
-	g_i /= 2;
-	if (g_i == 0)
+	(void)unused;
+	if (!client_pid)
+		client_pid = siginfo->si_pid;
+	c |= (sig == SIGUSR1);
+	if (++cnt == 8)
 	{
+		cnt = 0;
+		if (c == 0)
+		{
+			client_pid = 0;
+			return ;
+		}
 		write(1, &c, 1);
 		c = 0;
-		g_i = 128;
+		kill(client_pid, SIGUSR1);
+	}
+	else
+	{
+		c <<= 1;
+		kill(client_pid, SIGUSR2);
 	}
 }
 
 int	main(void)
 {
-	write(1, "Pid: ", 5);
-	ft_put_nbr(getpid());
-	write(1, "\n", 1);
-	signal(SIGUSR1, msg);
-	signal(SIGUSR2, msg);
+	struct sigaction	e;
+
+	write(1, "Server PID = [", 14);
+	ft_putnbr(getpid());
+	write(1, "]\n", 2);
+	e.sa_flags = SA_SIGINFO;
+	e.sa_sigaction = sig_handler;
+	sigaction(SIGUSR1, &e, 0);
+	sigaction(SIGUSR2, &e, 0);
 	while (1)
 		pause();
 	return (0);
