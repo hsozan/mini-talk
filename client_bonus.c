@@ -6,95 +6,110 @@
 /*   By: hsozan <hsozan@student.42kocaeli.com.      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/03 11:20:17 by hsozan            #+#    #+#             */
-/*   Updated: 2022/10/03 15:43:06 by hsozan           ###   ########.fr       */
+/*   Updated: 2022/10/31 13:00:11 by hsozan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <signal.h>
 #include <unistd.h>
+#include <stdlib.h>
+
+void	connection_terminate(pid_t server_pid)
+{
+	int	i;
+
+	i = 8;
+	while (i--)
+	{
+		usleep(50);
+		kill(server_pid, SIGUSR2);
+	}
+	exit(0);
+}
 
 int	ft_strlen_or_putnbr(int nbr, char *s)
 {
 	char	c;
 	int		i;
+	int		res;
 
 	i = 0;
 	if (nbr == -1)
 	{
-		while(s[i++])
-		return (i)
+		while (s[i++])
+			;
+		return (i);
+	}
+	if (nbr == -2 && s)
+	{
+		res = 0;
+		while (s[i] <= '9' && s[i] >= '0')
+		{
+			res = (res * 10) + (s[i] - '0');
+			i++;
+		}
+		return (res);
 	}
 	if (nbr >= 10)
-		ft_strlen_or_putnbr(nbr / 10);
+		ft_strlen_or_putnbr(nbr / 10, s);
 	c = (nbr % 10) + 48;
-	return(write(1, &c, 1));
+	return (write(1, &c, 1));
 }
 
-int	ft_atoi(char *s)
+void	send_bit(char *s, pid_t pid)
 {
-	int	i;
-	int	res;
+	static int				i = 8;
+	static unsigned char	c;
+	static char				*str;
+	static pid_t			server_pid;
 
-	res = 0;
-	i = 0;
-	while (s[i] <= '9' && s[i] >= '0')
+	if (s)
 	{
-		res = (res * 10) + (s[i] - '0');
-		i++;
+		str = s;
+		server_pid = pid;
+		c = *str;
 	}
-	return (res);
+	if (!i)
+	{
+		i = 8;
+		c = *(++str);
+		if (!c)
+			connection_terminate(server_pid);
+	}
+	if (c && c >> --i & 1)
+		kill(server_pid, SIGUSR1);
+	else if (c)
+		kill(server_pid, SIGUSR2);
 }
 
-void	send(int pid, char c)
+void	sig_handler(int sig, siginfo_t *siginfo, void *unused)
 {
-	int	i;
+	static int	recv_bytes = 0;
 
-	i = 128;
-	while (i > 0)
+	(void)siginfo;
+	(void)unused;
+	if (sig == SIGUSR1)
 	{
-		if (c & i)
-			kill(pid, SIGUSR2);
-		else
-			kill(pid, SIGUSR1);
-		usleep(100);
-		i /= 2;
+		write(1, "\rReceived bytes : ", 16);
+		ft_strlen_or_putnbr(++recv_bytes, 0);
 	}
+	send_bit(0, 0);
 }
 
-void	send_msg(int pid, char *s, int *g)
+int	main(int argc, char **argv)
 {
-	int		i;
-	char	c;
+	struct sigaction	e;
 
-	c = '\r';
-	i = 0;
-	send(pid, c);
-	while (s[i])
+	if (argc != 3)
 	{
-        send(pid, s[i]);
-		i++;
-		(*g)++;
+		write(1, "Usage : ./client [99 < Server PID < 99999] [Message]", 52);
+		return (0);
 	}
-}
-
-int	main(int ac, char **av)
-{
-	int		i;
-	int		j;
-	int		g;
-
-	i = 0;
-	j = 0;
-	g = 0;
-	if (ac != 3)
-		return (write(1, "Too many or too few arguments!\n", 32));
-	send_msg(ft_atoi(av[1]), av[2], &g);
-	if (g == ft_strlen_or_putnbr(-1,av[2]))
-	{
-		ft_strlen_or_putnbr(g);
-		write(1, " characters send to pid number :", 32);
-		ft_strlen_or_putnbr(ft_atoi(av[1]));
-		write(1, "\n", 1);
-	}
-	return (0);
+	e.sa_flags = SA_SIGINFO;
+	e.sa_sigaction = sig_handler;
+	sigaction(SIGUSR1, &e, 0);
+	sigaction(SIGUSR2, &e, 0);
+	send_bit(argv[2], ft_strlen_or_putnbr(-2, argv[1]));
+	while (1)
+		pause();
 }
