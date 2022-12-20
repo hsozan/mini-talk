@@ -28,7 +28,7 @@ void	msg(int s)
 {
 	static char	c;
 
-	if (s == 11)
+	if (s == SIGUSR2)
 		c += g_i;
 	g_i /= 2;
 	if (g_i == 0)
@@ -41,11 +41,12 @@ void	msg(int s)
 
 int	main(void)
 {
-	write(1, "Pid: ", 5);
-	ft_put_nbr(getpid());
-	write(1, "\n", 1);
-	signal(10, msg);
-	signal(11, msg);
+	write(1, "Server PID = [", 14);
+	ft_putnbr(getpid());
+	write(1, "]\n", 2);
+	write(1, "Waiting for client...\n", 22);
+	signal(SIGUSR1, msg);
+	signal(SIGUSR2, msg);
 	while (1)
 		pause();
 	return (0);

@@ -27,14 +27,14 @@ void	connection_terminate(pid_t server_pid)
 	exit(0);
 }
 
-int	ft_strlen_or_putnbr(int nbr, char *s)
+int	ft_atoi_or_putnbr(int nbr, char *s)
 {
 	char	c;
 	int		i;
 	int		res;
 
 	i = 0;
-	if (nbr == -1)
+	if (nbr == -1 && s)
 	{
 		while (s[i++])
 			;
@@ -51,7 +51,7 @@ int	ft_strlen_or_putnbr(int nbr, char *s)
 		return (res);
 	}
 	if (nbr >= 10)
-		ft_strlen_or_putnbr(nbr / 10, s);
+		ft_atoi_or_putnbr(nbr / 10, s);
 	c = (nbr % 10) + 48;
 	return (write(1, &c, 1));
 }
@@ -90,8 +90,8 @@ void	sig_handler(int sig, siginfo_t *siginfo, void *unused)
 	(void)unused;
 	if (sig == SIGUSR1)
 	{
-		write(1, "\rReceived bytes : ", 16);
-		ft_strlen_or_putnbr(++recv_bytes, 0);
+		write(1, "\rBytes received by server : ", 28);
+		ft_atoi_or_putnbr(++recv_bytes, 0);
 	}
 	send_bit(0, 0);
 }
@@ -109,7 +109,7 @@ int	main(int argc, char **argv)
 	e.sa_sigaction = sig_handler;
 	sigaction(SIGUSR1, &e, 0);
 	sigaction(SIGUSR2, &e, 0);
-	send_bit(argv[2], ft_strlen_or_putnbr(-2, argv[1]));
+	send_bit(argv[2], ft_atoi_or_putnbr(-2, argv[1]));
 	while (1)
 		pause();
 }

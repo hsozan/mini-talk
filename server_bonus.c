@@ -51,6 +51,7 @@ void	sig_handler(int sig, siginfo_t *siginfo, void *unused)
 		kill(client_pid, SIGUSR2);
 	}
 }
+//✅🔥⌚☣☮🌏📱Ⅻ🚀€🍔🍦👑⚽🎵🎧
 
 int	main(void)
 {
@@ -61,6 +62,7 @@ int	main(void)
 	write(1, "]\n", 2);
 	e.sa_flags = SA_SIGINFO;
 	e.sa_sigaction = sig_handler;
+	write(1, "Waiting for client...\n", 22);
 	sigaction(SIGUSR1, &e, 0);
 	sigaction(SIGUSR2, &e, 0);
 	while (1)

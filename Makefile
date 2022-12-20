@@ -41,6 +41,4 @@ fclean: clean
 
 re: fclean all
 
-reb: fclean bonus
-
 rebonus: fclean bonus

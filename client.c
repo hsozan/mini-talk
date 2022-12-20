@@ -52,9 +52,9 @@ int	main(int ac, char **av)
 		while (j--)
 		{
 			if ((av[2][i] >> j) % 2 == 0)
-				kill(ft_atoi(av[1]), 10);
+				kill(ft_atoi(av[1]), SIGUSR1);
 			else
-				kill(ft_atoi(av[1]), 11);
+				kill(ft_atoi(av[1]), SIGUSR2);
 			usleep(70);
 		}
 		i++;
