@@ -19,7 +19,7 @@ void	ft_put_nbr(int nbr)
 	char	c;
 
 	if (nbr >= 10)
-		ft_put_nbr(nbr / 10);
+		ft_putnbr(nbr / 10);
 	c = (nbr % 10) + 48;
 	write(1, &c, 1);
 }
